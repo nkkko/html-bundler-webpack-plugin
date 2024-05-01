@@ -48,3 +48,5 @@ class HtmlBundlerPlugin extends AssetCompiler {
 
 module.exports = HtmlBundlerPlugin;
 module.exports.loader = loader;
+// TODO: remove
+module.exports.cssLoader = AssetCompiler.cssLoader;

@@ -210,6 +210,20 @@ class AssetCompiler {
     const { webpack } = compiler;
     const { NormalModule, Compilation } = webpack;
 
+    // TODO:
+    const {
+      library: { EnableLibraryPlugin },
+    } = webpack;
+    //new EnableLibraryPlugin('commonjs2').apply(compiler);
+    // EntryOptionPlugin.applyEntryOption(childCompiler, this.context, {
+    //   child: {
+    //     library: {
+    //       type: 'commonjs2',
+    //     },
+    //     import: [`!!${request}`],
+    //   },
+    // });
+
     this.promises = [];
     this.fs = compiler.inputFileSystem.fileSystem;
     this.webpack = webpack;
@@ -630,13 +644,18 @@ class AssetCompiler {
           // see the test case js-import-css-same-in-many4
           createData.request = `${cssLoader.loader}!${createData.request}`;
 
-          if (meta.isVueStyle) {
-            createData.loaders = this.filterStyleLoaders(createData.loaders, parentModule.loaders);
-          } else {
-            createData.loaders = [cssLoader, ...createData.loaders];
-          }
+          // if (meta.isVueStyle) {
+          //   createData.loaders = this.filterStyleLoaders(createData.loaders, parentModule.loaders);
+          // } else {
+          //   createData.loaders = [cssLoader, ...createData.loaders];
+          // }
         }
       }
+
+      // if (file.endsWith('.css')) {
+      //   console.log('*** afterResolve: ', { file });
+      //   createData.loaders = [cssLoader, ...createData.loaders];
+      // }
     }
 
     meta.isScript = Collection.hasScript(request);
@@ -881,7 +900,7 @@ class AssetCompiler {
     }
 
     // 2. renders styles imported in JavaScript
-    if (Collection.hasImportedStyle(this.currentEntryPoint?.id)) {
+    if (!Option.isHot() && Collection.hasImportedStyle(this.currentEntryPoint?.id)) {
       this.renderImportStyles(result, { chunk });
     }
   }
@@ -1094,6 +1113,7 @@ class AssetCompiler {
         }
 
         cssHash += module.buildInfo.hash;
+        //module._cssSource && sources.push(...module._cssSource);
         sources.push(...module._cssSource);
         imports.push(importData);
         resources.push(module.resource);
@@ -1381,3 +1401,4 @@ class AssetCompiler {
 }
 
 module.exports = AssetCompiler;
+module.exports.cssLoader = cssLoader;

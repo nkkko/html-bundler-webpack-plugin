@@ -1,0 +1,12 @@
+{
+  "scripts": {
+    "start": "webpack serve --mode development",
+    "watch": "webpack watch --mode development",
+    "build": "webpack --mode=production --progress"
+  },
+  "devDependencies": {
+    "html-bundler-webpack-plugin": "file:../../..",
+    "html-webpack-plugin": "^5.6.0",
+    "style-loader": "^4.0.0"
+  }
+}

@@ -28,6 +28,9 @@ const pitchLoader = async function (remaining) {
   const options = this.getOptions() || {};
   const isUrl = module.resourceResolveData?.query.includes('url');
   const exportComment = '/* extracted by HTMLBundler CSSLoader */';
+  const isHot = this.hot;
+
+  console.log('###CSS LOADER1: ', { remaining });
 
   remaining += resource.includes('?') ? '&' : '?';
 
@@ -57,15 +60,69 @@ const pitchLoader = async function (remaining) {
     styles = result.locals;
   }
 
-  module._cssSource = esModule ? result.default : result;
   Collection.setImportStyleEsModule(esModule);
+
+  const cssSource = esModule ? result.default : result;
+  if (!isHot) {
+    module._cssSource = cssSource;
+  }
 
   // support for lazy load CSS in JavaScript, see the test js-import-css-lazy-url
   if (isUrl) {
-    return exportComment + module._cssSource;
+    return exportComment + cssSource;
   }
 
-  return styles ? (esModule ? 'export default' : 'module.exports = ') + JSON.stringify(styles) : exportComment;
+  let hmr = '';
+
+  if (isHot) {
+    const loaderContext = this;
+    const css = result.default.toString().replaceAll('\n', '');
+    const modulePath = JSON.stringify(loaderContext.utils.contextify(loaderContext.context, `!!${remaining}`));
+
+    hmr = `
+const css = \`${css}\`;
+const isDocument = typeof document !== 'undefined';
+
+if (!isDocument) {
+  console.log('CSS HMR does not work!');
+}
+
+console.log('### CSS HMR!');
+
+if (isDocument && module.hot) { 
+  module.hot.accept(undefined, function () {
+    // Do something ...
+  });
+  
+  document._cssHmr = document._cssHmr || { idx: 1, styleIds: new Map() };
+  const hmrMod = document._cssHmr;
+  const moduleId = module.id;
+
+  let styleId = hmrMod.styleIds.get(moduleId);
+  let styleElm;
+
+  if (styleId) {
+    styleElm = document.getElementById(styleId);
+  } else {
+    styleId = 'hot-update-' + hmrMod.idx++;
+    styleElm = document.createElement('style');
+    styleElm.setAttribute('id', styleId);
+    document.head.appendChild(styleElm);
+    hmrMod.styleIds.set(moduleId, styleId);
+  }
+
+  if (styleElm) {
+     styleElm.innerText = css;
+  }
+
+  console.log('### module.hot: ', { modId: module.id, styleId, styleElm }, hmrMod);
+}
+`;
+  }
+
+  //console.log('###CSS LOADER: ', { remaining, request, styles }, hmr);
+
+  return styles ? (esModule ? 'export default' : 'module.exports = ') + JSON.stringify(styles) : exportComment + hmr;
 };
 
 module.exports = loader;

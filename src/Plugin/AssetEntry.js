@@ -593,6 +593,8 @@ class AssetEntry {
    * @return {boolean} Return true if new file was added, if a file exists then return false.
    */
   static addToCompilation({ name, importFile, filenameTemplate, context, issuer }) {
+    //console.log('++ ADD ENTRY -> addToCompilation: ', { importFile });
+
     // skip duplicate entries
     if (this.#exists(name, importFile)) {
       return false;
@@ -691,6 +693,26 @@ class AssetEntry {
 
     entry.filename = filenameFn;
     assetEntryOptions.filenameFn = filenameFn;
+
+    if (Option.isHot() && assetEntryOptions.isStyle) {
+      // TODO: if isHot then stay `.js` file,
+      //  because this js file contains hmr code called at runtime, in the browser
+      entry.filename = '[name].hmr.js';
+      entry.library = {
+        // runtime code no return
+        name: '',
+        type: 'jsonp',
+      };
+
+      assetEntryOptions.isStyle = false;
+      assetEntryOptions.filenameTemplate = '[name].hmr.js';
+      assetEntryOptions.filenameFn = () => '[name].hmr.js';
+    } else {
+      entry.filename = filenameFn;
+      assetEntryOptions.filenameFn = filenameFn;
+    }
+
+    console.log('++ ADD ENTRY: ', { hot: Option.isHot(), entry, assetEntryOptions });
 
     this.entriesByName.set(name, assetEntryOptions);
     this.entriesById.set(assetEntryOptions.id, assetEntryOptions);

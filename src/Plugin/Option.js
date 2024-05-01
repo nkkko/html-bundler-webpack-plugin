@@ -15,6 +15,7 @@ class Option {
   static cacheable = false;
   static context = '';
   static testEntry = null;
+  static hot = false;
 
   static js = {
     test: /\.(js|ts|jsx|tsx|mjs|cjs|mts|cts)$/,
@@ -220,6 +221,20 @@ class Option {
     this.options.minifyOptions = { ...defaultMinifyOptions, ...this.options.minifyOptions };
 
     this.initEntry(this.loaderPath);
+
+    if (options.devServer) {
+      // default value of the `hot` is `true`
+      // https://webpack.js.org/configuration/dev-server/#devserverhot
+      this.hot = options.devServer.hot == null || options.devServer.hot === true;
+    }
+  }
+
+  /**
+   * Returns the the value of the `devServer.hot` webpack option.
+   * @return {boolean}
+   */
+  static isHot() {
+    return this.hot;
   }
 
   /**
