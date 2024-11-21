@@ -7,6 +7,8 @@ to compile and bundle source Sass and JavaScript in HTML.
 
 [![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/edit/hello-world-webpack?file=webpack.config.js)
 
+[![Open in Codeanywhere](https://codeanywhere.com/img/open-in-codeanywhere-btn.svg)](https://app.codeanywhere.com/#https://github.com/webdiscus/html-bundler-webpack-plugin)
+
 ## How to use
 
 ```sh
